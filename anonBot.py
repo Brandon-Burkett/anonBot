@@ -6,7 +6,8 @@ import json
 
 dotenv.load_dotenv('.env')
 
-bot = commands.Bot(command_prefix='!', description="Ask me anything!")
+bot = commands.Bot(command_prefix='!', description="Bot that allows the semi-anonymous posting of questions!",
+                   help_command=commands.DefaultHelpCommand(no_category='Commands'))
 
 
 @bot.event
@@ -15,15 +16,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for !anon <message>"))
 
 
-@bot.command()
-async def print_guild(ctx):
-    print(data)
-    for guild in data:
-        print(guild)
-        print(data[guild]['channel'])
-
-
-@bot.command()
+@bot.command(brief='Set the private logging channel (Admin)', description='This is an admin-only command. This command will set the private logging channel for the bot. This channel will be used to log all questions and the user who asked them. This channel must be set before the !anon command will work.')
 @commands.has_permissions(administrator=True)
 async def setprivate(ctx):
     f = open('db.json', "r+")
@@ -38,12 +31,13 @@ async def setprivate(ctx):
 
     f.seek(0)
     json.dump(data, f, indent=4)
+
     f.close()
 
     await ctx.send("Private channel set!")
 
 
-@ bot.command()
+@bot.command(brief='Use !anon <message> to send a semi-anonymous message!', description='Using this command will delete the message you sent, and send the content of the message as the bot. The original sender and message will still be logged in the private logging channel.')
 async def anon(ctx):
     f = open('db.json', "r")
     data = json.load(f)
